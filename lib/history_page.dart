@@ -28,19 +28,19 @@ class HistoryPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.receipt_long_outlined,
+                            Icons.receipt_long, 
                             size: 100,
                             color: Colors.grey.shade300,
                           ),
                           const SizedBox(height: 20),
                           Text(
                             'Belum ada transaksi',
-                            style: TextStyle(fontSize: 22, color: Colors.grey.shade500),
+                            style: Theme.of(context).textTheme.headlineSmall,
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Yuk, mulai belanja dessert!',
-                            style: TextStyle(fontSize: 18, color: Colors.grey.shade400),
+                            style: Theme.of(context).textTheme.bodyLarge,
                           ),
                         ],
                       ),
@@ -65,8 +65,8 @@ class HistoryPage extends StatelessWidget {
                             ),
                             title: Text(
                               NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
-                                  .format(order.totalAmount),
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                  .format(order.totalAmount), 
+                              style: Theme.of(context).textTheme.titleLarge,
                             ),
                             subtitle: Text(DateFormat('d MMMM yyyy, HH:mm').format(order.dateTime)),
                             children: order.products.map((prod) {
@@ -87,3 +87,4 @@ class HistoryPage extends StatelessWidget {
     );
   }
 }
+

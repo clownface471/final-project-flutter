@@ -50,8 +50,8 @@ class _ProductPageState extends State<ProductPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(
-                child: Text('Gagal memuat menu: ${snapshot.error.toString()}'));
+            return const Center(
+                child: Text('Gagal memuat menu, coba lagi nanti.'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('Menu dessert kosong.'));
           }
@@ -59,12 +59,12 @@ class _ProductPageState extends State<ProductPage> {
           final desserts = snapshot.data!;
           return AnimationLimiter(
             child: GridView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 2 / 2.8,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+                childAspectRatio: 2 / 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
               ),
               itemCount: desserts.length,
               itemBuilder: (context, index) {
@@ -106,7 +106,7 @@ class _ProductPageState extends State<ProductPage> {
                 dessert.imageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.no_photography, size: 50, color: Colors.grey),
+                  const Icon(Icons.no_photography, size: 50, color: Colors.grey),
               ),
             ),
           ),
@@ -117,7 +117,7 @@ class _ProductPageState extends State<ProductPage> {
               children: [
                 Text(
                   dessert.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -126,22 +126,28 @@ class _ProductPageState extends State<ProductPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      'Rp ${dessert.price.toStringAsFixed(0)}',
-                      style: TextStyle(
-                        color: theme.colorScheme.secondary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Rp ${dessert.price.toStringAsFixed(0)}',
+                          style: TextStyle(
+                            color: theme.colorScheme.secondary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                          ),
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () {
                         cart.addItem(dessert);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('${dessert.name} ditambahkan!'),
+                            content: Text('${dessert.name} ditambahkan ke keranjang!'),
                             duration: const Duration(seconds: 1),
-                            backgroundColor: theme.colorScheme.secondary,
                           ),
                         );
                       },
@@ -150,7 +156,7 @@ class _ProductPageState extends State<ProductPage> {
                         padding: const EdgeInsets.all(10),
                         backgroundColor: theme.colorScheme.primary,
                       ),
-                      child: const Icon( 
+                      child: const Icon(
                         Icons.add,
                         color: Colors.white,
                       ),

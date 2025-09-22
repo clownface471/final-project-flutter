@@ -54,7 +54,7 @@ class HomePage extends StatelessWidget {
                     context,
                     title: 'Lihat Menu',
                     subtitle: 'Pesan dessert favoritmu',
-                    icon: Icons.cake_outlined,  
+                    icon: Icons.cake_outlined,
                     color: theme.colorScheme.primary,
                     onTap: () {
                       Navigator.push(
@@ -68,7 +68,7 @@ class HomePage extends StatelessWidget {
                     context,
                     title: 'Riwayat',
                     subtitle: 'Cek transaksimu',
-                    icon: Icons.receipt_long_outlined, 
+                    icon: Icons.receipt_long_outlined,
                     color: theme.colorScheme.secondary,
                     onTap: () {
                       Navigator.push(

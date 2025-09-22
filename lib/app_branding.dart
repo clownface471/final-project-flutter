@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 
 class AppBranding extends StatelessWidget {
-  const AppBranding({super.key});
+  const AppBranding({super.key, required int size});
 
   @override
   Widget build(BuildContext context) {

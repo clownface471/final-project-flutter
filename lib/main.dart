@@ -5,6 +5,7 @@ import 'package:final_project_flutter/auth_service.dart';
 import 'package:final_project_flutter/cart_provider.dart';
 import 'package:final_project_flutter/order_provider.dart';
 import 'package:final_project_flutter/register_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -55,35 +56,40 @@ ThemeData buildThemeData(BuildContext context) {
     surface: Color(0xFFFFF6F6), // Very Light Pink
     onSurface: Color(0xFF4A4A4A), // Dark Grey
     onPrimary: Colors.white,
-    onSecondary: Colors.white,
     error: Color(0xFFD0021B), // Red
   );
 
-  final textTheme = GoogleFonts.patrickHandTextTheme(baseTheme.textTheme);
-  final emojiTextTheme = GoogleFonts.notoColorEmojiTextTheme(baseTheme.textTheme);
+  final baseTextTheme = GoogleFonts.patrickHandTextTheme(baseTheme.textTheme);
 
   return baseTheme.copyWith(
     colorScheme: colorScheme,
     primaryColor: colorScheme.primary,
     scaffoldBackgroundColor: const Color(0xFFFFF9F5),
+    textTheme: baseTextTheme.apply(
+      bodyColor: colorScheme.onSurface,
+      displayColor: colorScheme.onSurface,
+    ).copyWith(
+      headlineMedium: baseTextTheme.headlineMedium?.copyWith(fontSize: 36),
+      headlineSmall: baseTextTheme.headlineSmall?.copyWith(fontSize: 28),
+      titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 24),
+      bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 20, letterSpacing: -0.5),
+      bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 18, letterSpacing: -0.5),
+      labelLarge: baseTextTheme.labelLarge?.copyWith(fontSize: 20),
+    ),
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
       titleTextStyle: GoogleFonts.patrickHand(
         color: colorScheme.onSurface,
-        fontSize: 26,
+        fontSize: 28,
         fontWeight: FontWeight.bold,
       ),
       iconTheme: IconThemeData(color: colorScheme.onSurface),
     ),
-    textTheme: textTheme.apply(
-      bodyColor: colorScheme.onSurface,
-      displayColor: colorScheme.onSurface,
-    ).merge(emojiTextTheme),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white.withAlpha((255 * 0.8).round()),
+      fillColor: Colors.white.withAlpha(204),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
@@ -92,35 +98,39 @@ ThemeData buildThemeData(BuildContext context) {
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: colorScheme.primary, width: 2),
       ),
-      prefixIconColor: colorScheme.primary.withAlpha(180),
-      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 18),
+      prefixIconColor: colorScheme.primary.withAlpha(178),
+      labelStyle: const TextStyle(fontSize: 20),
+      hintStyle: const TextStyle(fontSize: 20),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         textStyle: GoogleFonts.patrickHand(
-          fontSize: 20,
+          fontSize: 22,
           fontWeight: FontWeight.bold,
         ),
-        elevation: 5,
-        shadowColor: colorScheme.primary.withAlpha((255 * 0.4).round()),
+        elevation: 4,
+        shadowColor: colorScheme.primary.withAlpha(102),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: colorScheme.secondary,
-        textStyle: GoogleFonts.patrickHand(fontSize: 18, fontWeight: FontWeight.bold),
+        textStyle: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     ),
     cardTheme: CardThemeData(
-      elevation: 3,
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       clipBehavior: Clip.antiAlias,
       color: Colors.white,
-      shadowColor: colorScheme.primary.withAlpha((255 * 0.1).round()),
+      shadowColor: colorScheme.primary.withAlpha(25),
     ),
   );
 }
@@ -132,35 +142,14 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..forward();
-
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    );
-
     Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const AuthGate()));
-      }
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const AuthGate()));
     });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 
   @override
@@ -174,24 +163,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             end: Alignment.bottomRight,
           ),
         ),
-        child: Center(
-          child: FadeTransition(
-            opacity: _animation,
-            child: ScaleTransition(
-              scale: _animation,
-              child: const AppBranding(),
-            ),
-          ),
+        child: const Center(
+          child: AppBranding(size: 100),
         ),
       ),
     );
   }
 }
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
@@ -215,15 +196,24 @@ class _LoginPageState extends State<LoginPage> {
     final authService = Provider.of<AuthService>(context, listen: false);
 
     try {
-      await authService.signInWithEmailPassword(
+      final User? user = await authService.signInWithEmailPassword(
         _emailController.text,
         _passwordController.text,
       );
+
+      if (user == null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Login Gagal. Periksa kembali email dan password Anda.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Login Gagal: Periksa kembali email dan password Anda.'),
+            content: Text('Terjadi kesalahan: ${e.toString()}'),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -265,38 +255,32 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(
-                      Icons.auto_awesome,
-                      size: 60,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                    const AppBranding(size: 60),
                     const SizedBox(height: 24),
                     Text(
                       'Selamat Datang Kembali!',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.patrickHand(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'Login untuk melanjutkan pesanan dessertmu.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black54, fontSize: 20),
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 48),
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(fontSize: 18),
-                      decoration: const InputDecoration( 
+                      style: const TextStyle(fontSize: 20),
+                      decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.email_outlined),
                         hintText: 'Email',
                       ),
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty || !value.contains('@')) {
+                        if (value == null ||
+                            value.trim().isEmpty ||
+                            !value.contains('@')) {
                           return 'Mohon masukkan email yang valid.';
                         }
                         return null;
@@ -306,15 +290,15 @@ class _LoginPageState extends State<LoginPage> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: !_isPasswordVisible,
-                      style: const TextStyle(fontSize: 18),
+                      style: const TextStyle(fontSize: 20),
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.lock_outline), 
+                        prefixIcon: const Icon(Icons.lock_outline),
                         hintText: 'Password',
                         suffixIcon: IconButton(
-                          icon: Icon( 
+                          icon: Icon(
                             _isPasswordVisible
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                           ),
                           onPressed: () {
                             setState(() {
@@ -341,7 +325,8 @@ class _LoginPageState extends State<LoginPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Belum punya akun?', style: TextStyle(fontSize: 18)),
+                        const Text('Belum punya akun?',
+                            style: TextStyle(fontSize: 18)),
                         TextButton(
                           onPressed: () {
                             Navigator.of(context).push(MaterialPageRoute(
@@ -361,3 +346,4 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+

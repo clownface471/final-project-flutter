@@ -139,6 +139,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 Wrap(
                   alignment: WrapAlignment.center,
                   crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 4,
                   children: [
                     const Text('Sudah punya akun?'),
                     TextButton(
