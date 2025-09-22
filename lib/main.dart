@@ -1,18 +1,361 @@
+import 'dart:async';
+import 'package:final_project_flutter/app_branding.dart';
+import 'package:final_project_flutter/auth_gate.dart';
+import 'package:final_project_flutter/auth_service.dart';
+import 'package:final_project_flutter/cart_provider.dart';
+import 'package:final_project_flutter/order_provider.dart';
+import 'package:final_project_flutter/register_page.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(const MainApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
+    final authService = AuthService();
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => authService),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProxyProvider<AuthService, OrderProvider>(
+          create: (_) => OrderProvider(null, []),
+          update: (ctx, auth, previousOrders) => OrderProvider(
+            auth.currentUser?.uid,
+            previousOrders == null ? [] : previousOrders.orders,
+          ),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Myop-Myup Dessert',
+        theme: buildThemeData(context),
+        debugShowCheckedModeBanner: false,
+        home: const SplashScreen(),
+      ),
+    );
+  }
+}
+
+ThemeData buildThemeData(BuildContext context) {
+  final baseTheme = ThemeData.light();
+  final colorScheme = const ColorScheme.light(
+    primary: Color(0xFFFF899C), // Soft Pink
+    secondary: Color(0xFFF5A623), // Warm Orange
+    surface: Color(0xFFFFF6F6), // Very Light Pink
+    onSurface: Color(0xFF4A4A4A), // Dark Grey
+    onPrimary: Colors.white,
+    onSecondary: Colors.white,
+    error: Color(0xFFD0021B), // Red
+  );
+
+  final textTheme = GoogleFonts.patrickHandTextTheme(baseTheme.textTheme);
+  final emojiTextTheme = GoogleFonts.notoColorEmojiTextTheme(baseTheme.textTheme);
+
+  return baseTheme.copyWith(
+    colorScheme: colorScheme,
+    primaryColor: colorScheme.primary,
+    scaffoldBackgroundColor: const Color(0xFFFFF9F5),
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      titleTextStyle: GoogleFonts.patrickHand(
+        color: colorScheme.onSurface,
+        fontSize: 26,
+        fontWeight: FontWeight.bold,
+      ),
+      iconTheme: IconThemeData(color: colorScheme.onSurface),
+    ),
+    textTheme: textTheme.apply(
+      bodyColor: colorScheme.onSurface,
+      displayColor: colorScheme.onSurface,
+    ).merge(emojiTextTheme),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.white.withAlpha((255 * 0.8).round()),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+      ),
+      prefixIconColor: colorScheme.primary.withAlpha(180),
+      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 18),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        textStyle: GoogleFonts.patrickHand(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        elevation: 5,
+        shadowColor: colorScheme.primary.withAlpha((255 * 0.4).round()),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: colorScheme.secondary,
+        textStyle: GoogleFonts.patrickHand(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    ),
+    cardTheme: CardThemeData(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      color: Colors.white,
+      shadowColor: colorScheme.primary.withAlpha((255 * 0.1).round()),
+    ),
+  );
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..forward();
+
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+
+    Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const AuthGate()));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Theme.of(context).colorScheme.surface, const Color(0xFFFFE3E8)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: FadeTransition(
+            opacity: _animation,
+            child: ScaleTransition(
+              scale: _animation,
+              child: const AppBranding(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  bool _isPasswordVisible = false;
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    try {
+      await authService.signInWithEmailPassword(
+        _emailController.text,
+        _passwordController.text,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login Gagal: Periksa kembali email dan password Anda.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Theme.of(context).colorScheme.surface, const Color(0xFFFFE3E8)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Icon(
+                      Icons.auto_awesome,
+                      size: 60,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Selamat Datang Kembali!',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.patrickHand(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Login untuk melanjutkan pesanan dessertmu.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.black54, fontSize: 20),
+                    ),
+                    const SizedBox(height: 48),
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: const TextStyle(fontSize: 18),
+                      decoration: const InputDecoration( 
+                        prefixIcon: Icon(Icons.email_outlined),
+                        hintText: 'Email',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty || !value.contains('@')) {
+                          return 'Mohon masukkan email yang valid.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: !_isPasswordVisible,
+                      style: const TextStyle(fontSize: 18),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock_outline), 
+                        hintText: 'Password',
+                        suffixIcon: IconButton(
+                          icon: Icon( 
+                            _isPasswordVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().length < 6) {
+                          return 'Password minimal harus 6 karakter.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 32),
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : ElevatedButton(
+                            onPressed: _handleLogin,
+                            child: const Text('LOGIN'),
+                          ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Belum punya akun?', style: TextStyle(fontSize: 18)),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => const RegisterPage()));
+                          },
+                          child: const Text('Daftar di sini'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
