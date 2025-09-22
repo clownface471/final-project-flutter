@@ -1,15 +1,13 @@
 import 'dart:async';
-import 'package:final_project_flutter/app_branding.dart';
-import 'package:final_project_flutter/auth_gate.dart';
+import 'package:final_project_flutter/app_router.dart';
 import 'package:final_project_flutter/auth_service.dart';
 import 'package:final_project_flutter/cart_provider.dart';
 import 'package:final_project_flutter/order_provider.dart';
-import 'package:final_project_flutter/register_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:go_router/go_router.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -38,11 +36,11 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
+        routerConfig: router,
         title: 'Myop-Myup Dessert',
         theme: buildThemeData(context),
         debugShowCheckedModeBanner: false,
-        home: const SplashScreen(),
       ),
     );
   }
@@ -51,41 +49,33 @@ class MyApp extends StatelessWidget {
 ThemeData buildThemeData(BuildContext context) {
   final baseTheme = ThemeData.light();
   final colorScheme = const ColorScheme.light(
-    primary: Color(0xFFFF899C), // Soft Pink
-    secondary: Color(0xFFF5A623), // Warm Orange
-    surface: Color(0xFFFFF6F6), // Very Light Pink
-    onSurface: Color(0xFF4A4A4A), // Dark Grey
+    primary: Color(0xFFFF899C),
+    secondary: Color(0xFFF5A623),
+    surface: Color(0xFFFFF6F6),
+    onSurface: Color(0xFF4A4A4A),
     onPrimary: Colors.white,
-    error: Color(0xFFD0021B), // Red
+    error: Color(0xFFD0021B),
   );
-
-  final baseTextTheme = GoogleFonts.patrickHandTextTheme(baseTheme.textTheme);
 
   return baseTheme.copyWith(
     colorScheme: colorScheme,
     primaryColor: colorScheme.primary,
     scaffoldBackgroundColor: const Color(0xFFFFF9F5),
-    textTheme: baseTextTheme.apply(
-      bodyColor: colorScheme.onSurface,
-      displayColor: colorScheme.onSurface,
-    ).copyWith(
-      headlineMedium: baseTextTheme.headlineMedium?.copyWith(fontSize: 36),
-      headlineSmall: baseTextTheme.headlineSmall?.copyWith(fontSize: 28),
-      titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 24),
-      bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 20, letterSpacing: -0.5),
-      bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 18, letterSpacing: -0.5),
-      labelLarge: baseTextTheme.labelLarge?.copyWith(fontSize: 20),
-    ),
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
       titleTextStyle: GoogleFonts.patrickHand(
         color: colorScheme.onSurface,
-        fontSize: 28,
+        fontSize: 30,
         fontWeight: FontWeight.bold,
+        letterSpacing: -0.5,
       ),
       iconTheme: IconThemeData(color: colorScheme.onSurface),
+    ),
+    textTheme: GoogleFonts.patrickHandTextTheme(baseTheme.textTheme).apply(
+      bodyColor: colorScheme.onSurface,
+      displayColor: colorScheme.onSurface,
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -99,18 +89,22 @@ ThemeData buildThemeData(BuildContext context) {
         borderSide: BorderSide(color: colorScheme.primary, width: 2),
       ),
       prefixIconColor: colorScheme.primary.withAlpha(178),
-      labelStyle: const TextStyle(fontSize: 20),
-      hintStyle: const TextStyle(fontSize: 20),
+      hintStyle: TextStyle(
+        color: Colors.grey.shade400,
+        fontSize: 20,
+        letterSpacing: -0.5,
+      ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         textStyle: GoogleFonts.patrickHand(
           fontSize: 22,
           fontWeight: FontWeight.bold,
+          letterSpacing: -0.5,
         ),
         elevation: 4,
         shadowColor: colorScheme.primary.withAlpha(102),
@@ -119,10 +113,8 @@ ThemeData buildThemeData(BuildContext context) {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: colorScheme.secondary,
-        textStyle: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
+        textStyle:
+            GoogleFonts.patrickHand(fontSize: 20, fontWeight: FontWeight.bold),
       ),
     ),
     cardTheme: CardThemeData(
@@ -147,8 +139,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const AuthGate()));
+      if (mounted) {
+        context.go('/login');
+      }
     });
   }
 
@@ -156,9 +149,9 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Theme.of(context).colorScheme.surface, const Color(0xFFFFE3E8)],
+            colors: [Color(0xFFFFF6F6), Color(0xFFFFE3E8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -173,6 +166,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
@@ -196,24 +190,15 @@ class _LoginPageState extends State<LoginPage> {
     final authService = Provider.of<AuthService>(context, listen: false);
 
     try {
-      final User? user = await authService.signInWithEmailPassword(
+      await authService.signInWithEmailPassword(
         _emailController.text,
         _passwordController.text,
       );
-
-      if (user == null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Login Gagal. Periksa kembali email dan password Anda.'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Terjadi kesalahan: ${e.toString()}'),
+            content: const Text('Login Gagal: Periksa kembali email dan password.'),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -236,11 +221,12 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Theme.of(context).colorScheme.surface, const Color(0xFFFFE3E8)],
+            colors: [Color(0xFFFFF6F6), Color(0xFFFFE3E8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -248,7 +234,7 @@ class _LoginPageState extends State<LoginPage> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -256,23 +242,24 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const AppBranding(size: 60),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     Text(
                       'Selamat Datang Kembali!',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      style: theme.textTheme.displaySmall,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     Text(
                       'Login untuk melanjutkan pesanan dessertmu.',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: theme.textTheme.headlineSmall
+                          ?.copyWith(letterSpacing: -0.5),
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 40),
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20, letterSpacing: -0.5),
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.email_outlined),
                         hintText: 'Email',
@@ -286,19 +273,19 @@ class _LoginPageState extends State<LoginPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
                       obscureText: !_isPasswordVisible,
-                      style: const TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20, letterSpacing: -0.5),
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.lock_outline),
                         hintText: 'Password',
                         suffixIcon: IconButton(
                           icon: Icon(
                             _isPasswordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                           ),
                           onPressed: () {
                             setState(() {
@@ -314,23 +301,26 @@ class _LoginPageState extends State<LoginPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     _isLoading
                         ? const Center(child: CircularProgressIndicator())
-                        : ElevatedButton(
-                            onPressed: _handleLogin,
-                            child: const Text('LOGIN'),
+                        // ignore: sized_box_for_whitespace
+                        : Container(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _handleLogin,
+                              child: const Text('LOGIN'),
+                            ),
                           ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Belum punya akun?',
-                            style: TextStyle(fontSize: 18)),
+                        Text('Belum punya akun?',
+                            style: theme.textTheme.bodyLarge),
                         TextButton(
                           onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => const RegisterPage()));
+                            context.push('/register');
                           },
                           child: const Text('Daftar di sini'),
                         ),
@@ -343,6 +333,33 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class AppBranding extends StatelessWidget {
+  final double size;
+  const AppBranding({super.key, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.cake_rounded,
+          size: size,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Myop-Myup',
+          style: GoogleFonts.pacifico(
+            fontSize: size * 0.45,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ],
     );
   }
 }

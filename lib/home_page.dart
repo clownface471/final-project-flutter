@@ -1,8 +1,7 @@
-import 'package:final_project_flutter/history_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'auth_service.dart';
-import 'product_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -26,29 +25,27 @@ class HomePage extends StatelessWidget {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Selamat Datang!',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w300,
-              ),
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w300),
             ),
             const SizedBox(height: 4),
             Text(
               authService.currentUser?.email ?? 'Pengguna',
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: theme.textTheme.headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
                 children: [
                   _buildMenuCard(
                     context,
@@ -56,13 +53,7 @@ class HomePage extends StatelessWidget {
                     subtitle: 'Pesan dessert favoritmu',
                     icon: Icons.cake_outlined,
                     color: theme.colorScheme.primary,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ProductPage()),
-                      );
-                    },
+                    onTap: () => context.push('/products'),
                   ),
                   _buildMenuCard(
                     context,
@@ -70,13 +61,7 @@ class HomePage extends StatelessWidget {
                     subtitle: 'Cek transaksimu',
                     icon: Icons.receipt_long_outlined,
                     color: theme.colorScheme.secondary,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const HistoryPage()),
-                      );
-                    },
+                    onTap: () => context.push('/history'),
                   ),
                 ],
               ),
@@ -93,6 +78,7 @@ class HomePage extends StatelessWidget {
       required IconData icon,
       required Color color,
       required VoidCallback onTap}) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(24),
@@ -102,7 +88,7 @@ class HomePage extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [color.withAlpha((255 * 0.7).round()), color],
+              colors: [color.withAlpha(180), color],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -119,16 +105,16 @@ class HomePage extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       subtitle,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withAlpha((255 * 0.9).round()),
-                          ),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: Colors.white.withAlpha(220),
+                      ),
                     ),
                   ],
                 ),

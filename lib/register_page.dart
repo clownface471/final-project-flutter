@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'auth_service.dart';
 
@@ -18,9 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void _handleRegister() async {
     final authService = Provider.of<AuthService>(context, listen: false);
     final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
     final theme = Theme.of(context);
-
 
     if (_emailController.text.isEmpty ||
         _passwordController.text.isEmpty ||
@@ -58,7 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
         content: Text('Registrasi berhasil! Silakan login.'),
         backgroundColor: Colors.green,
       ));
-      navigator.pop();
+      context.go('/login');
     } catch (e) {
       if (!mounted) return;
       messenger.showSnackBar(
@@ -71,6 +70,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -85,7 +85,7 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 Text(
                   'Satu langkah lagi menuju dessert!',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                  style: theme.textTheme.headlineMedium,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
@@ -139,12 +139,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 Wrap(
                   alignment: WrapAlignment.center,
                   crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 4,
                   children: [
-                    const Text('Sudah punya akun?'),
+                    Text('Sudah punya akun?', style: theme.textTheme.bodyLarge),
                     TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        context.pop();
                       },
                       child: const Text('Login di sini'),
                     ),
