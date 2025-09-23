@@ -3,7 +3,9 @@ import 'package:final_project_flutter/cart_page.dart';
 import 'package:final_project_flutter/history_page.dart';
 import 'package:final_project_flutter/home_page.dart';
 import 'package:final_project_flutter/main.dart';
+import 'package:final_project_flutter/order_item.dart';
 import 'package:final_project_flutter/product_page.dart';
+import 'package:final_project_flutter/receipt_page.dart';
 import 'package:final_project_flutter/register_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -53,6 +55,15 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/history',
       builder: (context, state) => const HistoryPage(),
+      routes: [
+        GoRoute(
+          path: 'receipt', 
+          builder: (context, state) {
+            final order = state.extra as OrderItem;
+            return ReceiptPage(order: order);
+          },
+        ),
+      ]
     ),
   ],
   redirect: (BuildContext context, GoRouterState state) {
@@ -63,7 +74,7 @@ final GoRouter router = GoRouter(
     final bool isSplashPage = location == '/';
 
     if (isSplashPage) {
-      return null; 
+      return null;
     }
 
     if (!loggedIn && !isAuthPage) {
@@ -74,6 +85,7 @@ final GoRouter router = GoRouter(
       return '/home';
     }
 
-    return null; 
+    return null;
   },
 );
+

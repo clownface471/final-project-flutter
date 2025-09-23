@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:final_project_flutter/order_provider.dart';
 import 'package:intl/intl.dart';
@@ -28,19 +29,19 @@ class HistoryPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.receipt_long, 
+                            Icons.receipt_long_outlined,
                             size: 100,
                             color: Colors.grey.shade300,
                           ),
                           const SizedBox(height: 20),
                           Text(
                             'Belum ada transaksi',
-                            style: Theme.of(context).textTheme.headlineSmall,
+                            style: TextStyle(fontSize: 24, color: Colors.grey.shade500),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Yuk, mulai belanja dessert!',
-                            style: Theme.of(context).textTheme.bodyLarge,
+                            style: TextStyle(fontSize: 20, color: Colors.grey.shade400),
                           ),
                         ],
                       ),
@@ -52,30 +53,44 @@ class HistoryPage extends StatelessWidget {
                         final order = orderData.orders[i];
                         return Card(
                           margin: const EdgeInsets.only(bottom: 16),
-                          child: ExpansionTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
-                              child: Text(
-                                '${i + 1}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
+                          child: InkWell(
+                            onTap: () {
+                              context.push('/history/receipt', extra: order);
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
+                                    child: Text(
+                                      '${i + 1}',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+                                              .format(order.totalAmount),
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(DateFormat('d MMMM yyyy, HH:mm').format(order.dateTime)),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(Icons.chevron_right, color: Colors.grey),
+                                ],
                               ),
                             ),
-                            title: Text(
-                              NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
-                                  .format(order.totalAmount), 
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            subtitle: Text(DateFormat('d MMMM yyyy, HH:mm').format(order.dateTime)),
-                            children: order.products.map((prod) {
-                              return ListTile(
-                                dense: true,
-                                title: Text(prod.dessert.name),
-                                trailing: Text('${prod.quantity}x'),
-                              );
-                            }).toList(),
                           ),
                         );
                       },
